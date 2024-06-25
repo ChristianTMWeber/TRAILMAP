@@ -41,21 +41,19 @@ If git-lfs does not work for you (e.g. error messages with the model being corru
 ##### Software requirements:
 * Python 3.7
 
-We **highly** recommend you use Anaconda to manage your packages because it is by far the easiest way to install cuda and cudnn with the correct versions. Refer to the [Readme Extended Version](../master/README-EXTENDED.md) for step by step instructions on how to do this with Anaconda
+We **highly** recommend you use Anaconda to manage your packages because it is by far the easiest way to install cuda and cudnn with the correct versions. Refer to the [Readme Extended Version](../master/README-EXTENDED.md) for step by step instructions on how to do this with Anaconda.
+
+But in short you can use the included environment file to create the appropriate conda environment. To do so, cd into the TRAILMAP folder and execute:
 
 ```
-tensorflow-gpu==2.1
-opencv==3.4
-pillow==7.0
-numpy==1.18
-h5py==2.1
+conda env create -f environment.yml
 ```
 
 ## Inference
 
 Data structure: Your brain volume must be in the form of 2D image slices in a folder where the slice order is determined by the alphanumerical order of the image file names. See TRAILMAP/data/testing/example-chunk for an example
 
-To run the network cd into the TRAILMAP directory and run 
+To run the segmentation cd into the TRAILMAP directory and run 
 ```
 python3 segment_brain_batch.py input_folder1 input_folder2 input_folder3 
 ```
@@ -63,6 +61,16 @@ python3 segment_brain_batch.py input_folder1 input_folder2 input_folder3
 where “input_folderX” is the absolute path to the folder of the brain you would like to process. Note: Depending on the amount of GPU memory, you may need to lower the batch_size in the segment_brain.py file.
 
 The program will create a folder named “seg-input_folderX " in the same directory as the input_folder
+
+
+Trailmap works best on images that have a similar resolution along x and y as the training images - around 1.8 microns along x and y - and similar intensity distributions. Trailmap can automatically rescale input images by using the following command line options:
+
+```
+python3 segment_brain_batch.py input_folder1 --doRescale  --rescaleFactor 0.39
+```
+
+This will match the intensity histograms in input_folder1 to those of the example images that come with trailmap, and reduce the resolution of those input images by a factor of 0.39. This is an appropriate rescaling factor for images that have a resolution along x and y of 0.7 microns to match the expected ~1.8 micron resolution, e.g. 0.7/1.8 =~ 0.39
+
 
 To segment an example chunk run
 ```
