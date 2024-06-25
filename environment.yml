@@ -12,4 +12,4 @@ dependencies:
   - h5py=2.7.0
   - tifffile
 
-  
+  # python -m pip install -U "roifile[all]"

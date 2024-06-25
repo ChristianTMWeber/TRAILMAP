@@ -31,7 +31,7 @@ def ensureURLType( URL: "string or list(str)") -> "list(str)":
 
 
     assert "!" in URL[0], \
-    "Arguments to 'merge_NeuroGlances.py' have to be passed in quotation marks, so that the exclamation mark '!' is preserved "
+    "Arguments to 'merge_NeuroGlances.py' have to be passed in single 'quotation marks', so that the exclamation mark '!' is preserved "
 
     return URL
 

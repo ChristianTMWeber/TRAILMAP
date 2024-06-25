@@ -2,3 +2,7 @@
 *.pyc
 __pycache__
 .idea
+*.tiff
+*.png
+*.tif
+*.pdf
