@@ -1,0 +1,16 @@
+name: TRAILMAP
+channels:
+  - defaults
+  - conda-forge
+  #- free
+dependencies:
+  - python>=3
+  - tensorflow-gpu==2.1
+  - opencv
+  - pillow==7.0
+  - numpy
+  - h5py=2.7.0
+  - tifffile
+  - matplotlib
+  - scikit-learn
+  - ray-all 
