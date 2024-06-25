@@ -18,9 +18,28 @@ def initilizeArgParser( parser = argparse.ArgumentParser(
         If this argument is not provided, we will output the each segmentation map to \
         <path_to_n-th_input>\\seg-<top_level_n-th_input>.")
 
-    parser.add_argument( "--dryRun", default=False, action= 'store_true' ,
-    help = "With this option we skip the step of actually segmenting the images, \
-    and only list the inputs that we would process and where the outputs would go." )
+    parser.add_argument( "--doRescale", default=False, action= 'store_true' , required = False , 
+    help = "The trailmap algorithm was trained on images with an resolution \
+    of about 1.8 micro meter along x and y. \
+    Thus it only works well with images that have a similar resolution. \
+    Use this option '--doRescale' together with '--rescaleFactor' to automatically \
+    rescale the images to a suitable resolutoin" )
+
+    parser.add_argument( "--rescaleFactor", type=str, default=0.7/1.8, required = False , 
+    help = "Sets the factor by which we downscale the resolution when the\
+     '--doRescale' options is used. \
+    To downscale from a 9x maginification to the appropriate resultion use \
+    a factor of 0.7/1.8 ~ 0.39. \
+    0.7 is here the source resolution of about 0.7 micro meter along x and y\
+    and 1.8 micro meter is the target resolution.\
+    So scaling factors smaller than one will reduce the resolution." )
+
+
+    parser.add_argument( "--nCPUs", type=int, default=None, required = False , 
+    help = "Number of CPU cores we use for the rescaling. \
+    By default we use a quarter of the available logical CPU cores." )
+    
+
 
     args = parser.parse_args()
 
@@ -33,6 +52,9 @@ def initilizeArgParser( parser = argparse.ArgumentParser(
 
 
 if __name__ == "__main__":
+
+
+    #import pdb; pdb.set_trace()
 
     args = initilizeArgParser()
 
@@ -47,8 +69,8 @@ if __name__ == "__main__":
     # Load the network
     weights_path = base_path + "/data/model-weights/trailmap_model.hdf5"
 
-    model = get_net()
-    model.load_weights(weights_path)
+    #model = get_net()
+    #model.load_weights(weights_path)
 
     for folderIndex , input_folder in enumerate(args.foldersToSegment):
 
@@ -60,6 +82,19 @@ if __name__ == "__main__":
 
         # Remove trailing slashes
         input_folder = os.path.normpath(input_folder)
+
+
+        # setup the rescaling
+        rescale_name = "rescale-" + os.path.basename(input_folder)
+        rescale_dir = os.path.dirname(input_folder)
+        rescale_folder = os.path.join(rescale_dir, rescale_name)
+
+        nCPUs = args.nCPUs
+        if args.nCPUs is None: nCPUs = os.cpu_count()//4 
+
+
+        if args.doRescale:
+            rescaleImagesFromFolder( input_folder , rescale_folder,  scaleFactor = args.rescaleFactor, nCPUs = nCPUs )
 
         # Output folder name
 
@@ -83,6 +118,10 @@ if __name__ == "__main__":
 
         os.makedirs(output_folder)
 
+        segmentationInput = input_folder
+
+        if args.doRescale: segmentationInput=rescale_folder
+
         # Segment the brain
-        segment_brain(input_folder, output_folder, model)
+        segment_brain(segmentationInput, output_folder, model)
 
