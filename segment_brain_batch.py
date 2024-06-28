@@ -5,6 +5,9 @@ import os
 import shutil
 import argparse # to parse command line options
 
+from auxiliaryMethods.rescale9xImagesTo3xImages import rescaleImagesFromFolder
+
+
 
 def initilizeArgParser( parser = argparse.ArgumentParser(
     description="") ):
@@ -69,8 +72,8 @@ if __name__ == "__main__":
     # Load the network
     weights_path = base_path + "/data/model-weights/trailmap_model.hdf5"
 
-    #model = get_net()
-    #model.load_weights(weights_path)
+    model = get_net()
+    model.load_weights(weights_path)
 
     for folderIndex , input_folder in enumerate(args.foldersToSegment):
 

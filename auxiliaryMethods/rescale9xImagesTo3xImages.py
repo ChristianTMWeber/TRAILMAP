@@ -1,18 +1,22 @@
 import ray
-from ray.experimental import tqdm_ray
 
-import skimage
+#import skimage
+import skimage.transform
+import skimage.exposure
+
 import os
 import tifffile
 import time
 
 import numpy as np
 
-import remote
+#import remote
 import re
 
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from auxiliaryMethods.rescale9xImagesTo3xImages import rescaleImages
+from tiffStackArray import tiffStackArray
 
 def getTiffFileTuple( imagePath : str , fileType : str = ".tif{1,2}") -> tuple:
     # get all the tiff files in a given folder
@@ -47,6 +51,7 @@ def rescaleImage(imagePath1, imagePath2, scaleFactor, outputPath, referenceInten
 
     image1 = tifffile.imread(imagePath1).astype(np.float32)
 
+    scaleFactor = float(scaleFactor)
 
     # half the z-resolution by avereging pairs of z-slices
     if imagePath2 is not None:
@@ -68,7 +73,7 @@ def rescaleImage(imagePath1, imagePath2, scaleFactor, outputPath, referenceInten
         scaledImage = image
 
     if referenceIntensityArray is not None:
-        scaledImage = skimage.exposure.match_histograms(scaledImage, referenceIntensityArray, channel_axis=None)
+        scaledImage = skimage.exposure.match_histograms(scaledImage, referenceIntensityArray )
 
     tifffile.imwrite(outputPath, scaledImage.astype(np.uint16), compression ="zlib")
 
@@ -102,12 +107,11 @@ def rescaleImagesFromFolder( folderWithImages , outputFolder,  scaleFactor = 0.7
 
     trailmapTargetIntesityArray = getTrailmapReferenceArray(referenceImages = referenceHistograms)
 
-    # create a reference to the array for use with the ray workers
-    trailmapTargetIntesityArrayRayReference = ray.put(trailmapTargetIntesityArray)
-
-
     # setup ray workers
     ray.init(num_cpus=nCPUs) # Initialize Ray with some number of workers
+
+    # create a reference to the array for use with the ray workers
+    trailmapTargetIntesityArrayRayReference = ray.put(trailmapTargetIntesityArray)
 
     # get images
     tiffTuple = getTiffFileTuple( folderWithImages, ".tif{1,2}" )
@@ -127,8 +131,7 @@ def rescaleImagesFromFolder( folderWithImages , outputFolder,  scaleFactor = 0.7
 
         outputPath = os.path.join(outputFolder, os.path.basename(tiffPath1))
 
-
-        workScheduleForRayWorkers.append( rescaleImage.remote(tiffPath1, tiffPath2, scaleFactor, outputPath, referenceIntensityArray = trailmapTargetIntesityArray))
+        workScheduleForRayWorkers.append( rescaleImage.remote(tiffPath1, tiffPath2, scaleFactor, outputPath, referenceIntensityArray = trailmapTargetIntesityArrayRayReference))
 
         print("Scheduled: %i out of %i" %(index+1, len(tiffTuple)))
 
