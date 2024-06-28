@@ -46,7 +46,7 @@ def getTiffFileTuple( imagePath : str , fileType : str = ".tif{1,2}") -> tuple:
     return tuple(tiffFileList)
 
 
-@ray.remote # this decorator tells Ray to parallelize this function
+#@ray.remote # this decorator tells Ray to parallelize this function
 def rescaleImage(imagePath1, imagePath2, scaleFactor, outputPath, referenceIntensityArray = None):
 
     image1 = tifffile.imread(imagePath1).astype(np.float32)
@@ -108,10 +108,10 @@ def rescaleImagesFromFolder( folderWithImages , outputFolder,  scaleFactor = 0.7
     trailmapTargetIntesityArray = getTrailmapReferenceArray(referenceImages = referenceHistograms)
 
     # setup ray workers
-    ray.init(num_cpus=nCPUs) # Initialize Ray with some number of workers
+    #ray.init(num_cpus=nCPUs) # Initialize Ray with some number of workers
 
     # create a reference to the array for use with the ray workers
-    trailmapTargetIntesityArrayRayReference = ray.put(trailmapTargetIntesityArray)
+    #trailmapTargetIntesityArrayRayReference = ray.put(trailmapTargetIntesityArray)
 
     # get images
     tiffTuple = getTiffFileTuple( folderWithImages, ".tif{1,2}" )
@@ -131,16 +131,18 @@ def rescaleImagesFromFolder( folderWithImages , outputFolder,  scaleFactor = 0.7
 
         outputPath = os.path.join(outputFolder, os.path.basename(tiffPath1))
 
-        workScheduleForRayWorkers.append( rescaleImage.remote(tiffPath1, tiffPath2, scaleFactor, outputPath, referenceIntensityArray = trailmapTargetIntesityArrayRayReference))
+        rescaleImage(tiffPath1, tiffPath2, scaleFactor, outputPath, referenceIntensityArray = trailmapTargetIntesityArray)
+
+        #workScheduleForRayWorkers.append( rescaleImage.remote(tiffPath1, tiffPath2, scaleFactor, outputPath, referenceIntensityArray = trailmapTargetIntesityArrayRayReference))
 
         print("Scheduled: %i out of %i" %(index+1, len(tiffTuple)))
 
         #if index > 30: break
 
 
-    rayoutput = ray.get(workScheduleForRayWorkers)
+    #rayoutput = ray.get(workScheduleForRayWorkers)
 
-    ray.shutdown() # shutdown Ray to release resources and memory
+    #ray.shutdown() # shutdown Ray to release resources and memory
 
     return outputFolder
 
