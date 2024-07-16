@@ -123,10 +123,10 @@ def rescaleImagesFromFolder( folderWithImages , outputFolder,  scaleFactor = 0.7
 
     workScheduleForRayWorkers = []
 
-    for index in range(0,len(tiffTuple)-1, 1 + averageZStackPairs):
+    for index in range(0,len(tiffTuple), 1 + averageZStackPairs):
 
         tiffPath1 = tiffTuple[index]
-        if averageZStackPairs: tiffPath2 = tiffTuple[index+1]
+        if averageZStackPairs: tiffPath2 = tiffTuple[index]
         else: tiffPath2 = None
 
         outputPath = os.path.join(outputFolder, os.path.basename(tiffPath1))
@@ -135,7 +135,7 @@ def rescaleImagesFromFolder( folderWithImages , outputFolder,  scaleFactor = 0.7
 
         #workScheduleForRayWorkers.append( rescaleImage.remote(tiffPath1, tiffPath2, scaleFactor, outputPath, referenceIntensityArray = trailmapTargetIntesityArrayRayReference))
 
-        print("Scheduled: %i out of %i" %(index+1, len(tiffTuple)))
+        print("Rescaled: %i out of %i" %(index+1, len(tiffTuple)))
 
         #if index > 30: break
 

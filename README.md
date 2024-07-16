@@ -48,6 +48,11 @@ But in short you can use the included environment file to create the appropriate
 ```
 conda env create -f environment.yml
 ```
+Then activate the created environment via
+
+```
+conda activate TRAILMAP
+```
 
 ## Inference
 
