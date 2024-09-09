@@ -73,6 +73,11 @@ def write_folder_section(output_folder, file_names, section_index, section_seg):
 
         # If write fails print problem
         pil_image = Image.fromarray(section_seg[slice_index])
+
+        # Convert the image to 8-bit gray scale if it's not already
+        if pil_image.mode != "L":
+            pil_image = pil_image.convert("L")
+
         pil_image.save(output_full_path)
 """
 Segment a brain by first cropping a list of chunks from the brain of the models's input size and executing the models on 
